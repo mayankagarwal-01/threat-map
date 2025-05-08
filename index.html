@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threat Map</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+    <header>
+
+        <div class="logo">
+            <i class="fa-solid fa-masks-theater"></i>
+            <h3>Threat Map</h3>
+            </div>
+
+        <nav>
+            <ul class="nav-links">
+                <li><a href="#">Dashboard</a></li>
+                <li><a href="#">Threats</a></li>
+                <li><a href="#">Reports</a></li>
+            </ul>
+        </nav>
+
+        <a class="logout" href="#"><i class="fa-solid fa-right-from-bracket"></i></a>
+
+    </header>
+
+
+    <main>
+
+        <!-- Analytics of threats Section  -->
+    
+        <section class="analytics">
+            <!-- Chart section showing all active threats according to severity -->
+            <div class="chart">
+                <canvas id="analyticsChart"></canvas>
+            </div>
+
+        </section>
+
+        <!-- Recent threats Section  -->
+        <section class="recent">
+            <div class="recent-threats">
+              <h2>Recent Threats</h3>
+              <div class="threats-container">
+                <ul class="threats-list">
+                  <!-- Dynamic content will be inserted here -->
+                  <!-- Each threat will follow this pattern: -->
+                  <li class="threat-item">
+                    <a href="/threats/view/[threat-id]" class="threat-link">
+                      <div class="threat-info">
+                        <span class="threat-name">Threat Name</span>
+                        <span class="threat-severity">Threat Severity</span>
+                        <span class="threat-date">TimeStamp Received</span>
+                      </div>
+
+                    </a>
+                  </li>
+
+                  <li class="threat-item">
+                    <a href="/threats/view/[threat-id]" class="threat-link">
+                      <div class="threat-info">
+                        <span class="threat-name">Threat Name</span>
+                        <span class="threat-severity">Threat Severity</span>
+                        <span class="threat-date">TimeStamp Received</span>
+                      </div>
+
+                    </a>
+                  </li>
+
+                  <li class="threat-item">
+                    <a href="/threats/view/[threat-id]" class="threat-link">
+                      <div class="threat-info">
+                        <span class="threat-name">Threat Name</span>
+                        <span class="threat-severity">Threat Severity</span>
+                        <span class="threat-date">TimeStamp Received</span>
+                      </div>
+
+                    </a>
+                  </li>
+
+                  <li class="threat-item">
+                    <a href="/threats/view/[threat-id]" class="threat-link">
+                      <div class="threat-info">
+                        <span class="threat-name">Threat Name</span>
+                        <span class="threat-severity">Threat Severity</span>
+                        <span class="threat-date">TimeStamp Received</span>
+                      </div>
+
+                    </a>
+                  </li>
+
+                  <li class="threat-item">
+                    <a href="/threats/view/[threat-id]" class="threat-link">
+                      <div class="threat-info">
+                        <span class="threat-name">Threat Name</span>
+                        <span class="threat-severity">Threat Severity</span>
+                        <span class="threat-date">TimeStamp Received</span>
+                      </div>
+
+                    </a>
+                  </li>
+
+                  <!-- Up to 5 items will be displayed -->
+                </ul>
+                <div class="no-threats-message" style="display: none;">No recent threats detected</div>
+              </div>
+            </div>
+        </section>
+
+        <!-- Severity Section -->
+         <div class="severity">
+            <h2 style="width: max-content;">Threats Categorized by Severity</h2>
+
+            <div class="categories">
+
+                <section class="high">
+                    <h3>High Severity</h3>
+                    <button id="high-btn"><i class="fa-solid fa-right-to-bracket"></i></button>
+                </section>
+
+                <section class="medium">
+                    <h3>Medium Severity</h3>
+                    <button id="med-btn"><i class="fa-solid fa-right-to-bracket"></i></button>
+
+                </section>
+
+                <section class="low">
+                    <h3>Low Severity</h3>
+                    <button id="low-btn"><i class="fa-solid fa-right-to-bracket"></i></button>
+                </section>
+            </div>
+        </div>
+
+        <!-- Reports Section -->
+         <div class="reports">
+            <div class="reports-header">
+                <h2>Reports Generated</h2>
+                <button><u>View All</u></button>
+            </div>
+
+            <section>
+                <ul>
+
+                    <li class="report-item">
+                        <a href="/reports/view/[report-id]" class="report-link">
+                          <div class="report-info">
+                            <span class="report-name">Report Name</span>
+                            <span class="report-date">TimeStamp Created</span>
+                          </div>
+    
+                        </a>
+                    </li>
+
+                    <li class="report-item">
+                        <a href="/reports/view/[report-id]" class="report-link">
+                          <div class="report-info">
+                            <span class="report-name">Report Name</span>
+                            <span class="report-date">TimeStamp Created</span>
+                          </div>
+    
+                        </a>
+                    </li>
+
+                    <li class="report-item">
+                        <a href="/reports/view/[report-id]" class="report-link">
+                          <div class="report-info">
+                            <span class="report-name">Report Name</span>
+                            <span class="report-date">TimeStamp Created</span>
+                          </div>
+    
+                        </a>
+                    </li>
+
+                    <li class="report-item">
+                        <a href="/reports/view/[report-id]" class="report-link">
+                          <div class="report-info">
+                            <span class="report-name">Report Name</span>
+                            <span class="report-date">TimeStamp Created</span>
+                          </div>
+    
+                        </a>
+                    </li>
+
+                </ul>
+            </section>
+            
+         </div>
+        
+
+    </main>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="chart.js"></script>
+
+    
+</body>
+
+</html>

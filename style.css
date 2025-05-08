@@ -1,0 +1,257 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
+
+
+:root {
+    /* Base Colors */
+    --bg-primary: #121212;
+    --bg-card: #1E1E1E;
+    --text-primary: #edf0f1;
+    --text-secondary: #ABABAB;
+    
+    /* Accent Colors */
+    --accent-primary: #0088a9;
+
+    /* Functional Colors */
+    --color-red: rgba(225, 0, 0, 1);;
+    --color-red-hover: rgba(180, 0, 0, 0.8);
+  }
+  
+
+*{
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+body{
+    min-height: 100vh;
+    background-color: var(--bg-primary);
+
+}
+
+li,a,h3,h2{
+    font-family: "Montserrat", sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    color: var(--text-primary);
+    text-decoration: none;
+}
+
+h2{
+    font-size: 24px;
+    font-weight: bold;
+}
+
+
+/* ------------HEADER/NAVBAR------------*/
+
+header{
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    background-color: var(--bg-primary);
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 5%;
+    border-bottom: 1px solid #edf0f1;
+}
+
+.logo{
+    font-size: 80%;
+    color: var(--text-primary);
+    cursor: pointer;
+}
+
+.nav-links{
+    list-style: none;
+}
+
+.nav-links li{
+
+    display: inline-block;
+    padding: 0px 20px;
+}
+
+.nav-links li a{
+    transition: all 0.3s ease 0s;
+}
+
+.nav-links li a:hover{
+
+    color: var(--accent-primary);
+}
+
+.logout i{
+    padding: 9px 25px;
+    background-color: var(--color-red);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease 0s;
+}
+
+.logout i:hover{
+    background-color: var(--color-red-hover);   
+}
+
+
+
+/* ------------MAIN------------*/
+main{
+    padding: 1rem 5%;
+    display: grid;
+    grid-template-columns: repeat(12,1fr);
+    gap: 1rem;
+}
+
+section{
+    background-color: var(--bg-card);
+}
+
+
+/* ------------ANALYTICS CHART------------*/
+.analytics{
+    grid-column: span 3;
+    padding: 1.5rem;
+    border: none;
+    border-radius: 1rem;
+}
+
+.chart{
+    height: auto;
+    width: auto;
+}
+
+
+#analyticsChart{
+    height: 100% !important;
+    width: 100% !important;
+    background-color: transparent !important;
+}
+
+
+/* ------------RECENT THREATS SECTION START------------*/
+.recent{
+    grid-column: span 9;
+    border: none;
+    border-radius: 0.1rem;
+}
+
+/* .recent .recent-threats{
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+
+.recent-threats ul{
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    list-style:decimal;
+} */
+
+.recent-threats .threat-link{
+    color: var(--text-secondary);
+}
+
+/* .recent-threats .threat-item .threat-info{
+    display: flex;
+    justify-content: space-between;
+} */
+
+/* ------------SEVERITY SECTION------------*/
+
+.severity{
+    grid-column: span 12;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2.5%;
+}
+
+.severity .categories{
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1.5rem;
+}
+
+.categories section{
+    display: flex;
+    position: relative;
+    justify-content: space-between;
+    padding: 1rem;
+    grid-column: span 4;
+    transition: all 0.3s ease 0s;
+    z-index: 1;
+    cursor: pointer;
+}
+
+.categories section:hover{
+
+    transform: scale(1.05);
+    z-index: 2;
+
+}
+
+.categories section button{
+
+    cursor: pointer;
+    border: none;
+    font-size: 20px;
+    background-color: transparent;
+    color: var(--text-primary);
+}
+
+
+/* ------------REPORTS SECTION------------*/
+
+.reports{
+
+    margin-top: 5%;
+    grid-column: span 12;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.reports-header{
+
+    display: flex;
+    justify-content: space-between;
+}
+
+.reports-header button{
+
+    cursor: pointer;
+    border: none;
+    font-size: 16px;
+    background-color: transparent;
+    color: var(--text-primary);
+}
+
+
+.recent .recent-threats, .reports section{
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+
+.recent-threats ul, .reports ul{
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    list-style:decimal;
+}
+
+.recent-threats .threat-item .threat-info, .reports .report-item .report-info{
+    display: flex;
+    justify-content: space-between;
+}
+
