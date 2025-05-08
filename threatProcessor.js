@@ -4,10 +4,12 @@ const PDFDocument = require('pdfkit');
 const { WritableStreamBuffer } = require('stream-buffers');
 const { simpleParser } = require('mailparser');
 
+
 // AWS SDK v3 imports
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const { DynamoDBClient, PutItemCommand } = require('@aws-sdk/client-dynamodb');
 const { SecretsManagerClient, GetSecretValueCommand } = require('@aws-sdk/client-secrets-manager');
+
 
 //AWS instances wrt region of operation
 const s3 = new S3Client({ region: 'ap-south-1' });
@@ -31,13 +33,16 @@ exports.handler = async (event) => {
     const SECRET_ID = process.env.SECRET_ID;
     const BUCKET_NAME = process.env.BUCKET_NAME;
     const TABLE_NAME = process.env.TABLE_NAME;
-    const AI_API = process.env.AI_API;
 
     //Using AWS Secrets Manager for securing email credentials
     const secretResponse = await secretsManager.send(
       new GetSecretValueCommand({ SecretId: SECRET_ID })
     );
     const creds = JSON.parse(secretResponse.SecretString);
+
+    //API CREDENTIALS
+    const AI_API = creds.AI_API;
+
 
 
     //Configuration of IMAP 
@@ -79,24 +84,6 @@ exports.handler = async (event) => {
         const from = parsed.from?.text || 'Unknown Sender';
         const date = parsed.date || new Date();
 
-        // //Removing Boiler plate
-        // body = body.replace(/--\s*\n[\s\S]+$/, '')
-        //        .replace(/This email and any attachments.*$/is, '')
-        //        .replace(/To unsubscribe.*$/is, '')
-        //        .replace(/Regards,\s*[\s\S]+$/i, '')
-        //        .trim();
-
-        
-        const prompt = `
-        Given the following email content, extract the following fields in JSON:
-        - Threat Campaign
-        - Threat Summary
-        - Suspected I.P. Address of Threat
-        Email:
-        ${parsed}
-        `;
-
-
         //Keywords based email check
         const isThreat = KEYWORDS.some(keyword =>
           subject.toLowerCase().includes(keyword) || body.toLowerCase().includes(keyword)
@@ -104,6 +91,12 @@ exports.handler = async (event) => {
 
 
         if (isThreat) {
+
+
+          //Waiting for response on Threat campaign, type and suspected I.P.(s)
+          const responseAI = await promtProcessor(body, AI_API);
+
+
 
           //Writing PDF in Memory not disk, keeps data safe even at rest
           const bufferWriter = new WritableStreamBuffer();
@@ -137,7 +130,9 @@ exports.handler = async (event) => {
               subject: { S: subject },
               date: { S: date.toISOString() },
               s3Key: { S: `emails/${filename}` },
-              summary: { S: 'SUMMARY using LLM' },
+              campaign: { S: responseAI.campaign },
+              type: { S: responseAI.type},
+              suspect_ip: { S: responseAI.suspect_ip},
               isActive: { S: true}
             }
           }));
@@ -176,3 +171,72 @@ exports.handler = async (event) => {
     }
   }
 };
+
+
+
+//Function for Prompt Processing
+async function promtProcessor(email, API) {
+
+  const prompt = `
+  Given the following email content, extract the following fields in JSON & RESPOND ONLY FINAL ANSWER:
+  - Threat Campaign
+  - Severity of Threat (High, Medium, Low, Urgent) adjust for nuance
+  - Suspected IPs of Threat
+  the JSON format should be :
+  - campaign
+  - type
+  - suspect_ip
+  Email:
+  ${email}
+  `;
+
+  //Generating a response from AI to get Threat properties 
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+          "Authorization": `Bearer ${API}`,
+          "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+          "model": "microsoft/phi-4-reasoning:free",
+          "messages": [
+              {
+                  "role": "user",
+                  "content": prompt
+              }
+          ]
+      })
+  });
+
+  //Conversion to JSON format
+  const jsonResponse = await response.json();
+  const result =  jsonResponse.choices[0].message.content;
+
+  const matches = [...result.matchAll(/{[\s\S]*?}/g)];
+
+
+  if (matches.length > 0) {
+  // Get the last JSON-like block
+  let lastJsonLike = matches[matches.length - 1][0];
+
+  // Fix format to valid JSON
+  lastJsonLike = lastJsonLike.replace(/(\w+)\s*:\s*([^,\n}]+)/g, (m, key, value) => {
+      key = `"${key.trim()}"`;
+      value = `"${value.trim()}"`;
+      return `${key}: ${value}`;
+  });
+
+  let parsed;
+  try {
+      parsed = JSON.parse(lastJsonLike);
+      return parsed;
+  } catch (e) {
+      console.error("Failed to parse JSON:", e);
+      return e;
+  }
+  } else {
+  console.log("No JSON-like structure found.");
+  return "Error"
+}
+}
+
