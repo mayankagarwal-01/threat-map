@@ -322,14 +322,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         };
       });
 
+      //Loading Data Animation
       if(unwrappedData){
         body.classList.remove('skeleton');
       }else{
         body.classList.add('skeleton');
 
       }
-      
+    
       return unwrappedData;
+      
       } else {
       console.error("Expected 'Items' array but got:", data);
       throw new Error('Something went wrong');  // Return an empty array in case of unexpected format
