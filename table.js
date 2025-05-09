@@ -1,5 +1,6 @@
 let filteredData;
 let actualData;
+let tooltip;
 
 document.addEventListener("DOMContentLoaded", async () => {
     const table = document.getElementById('threats-table');
@@ -8,6 +9,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const dateHeader = document.getElementById('date');
     const filterBtns = document.querySelectorAll('.filter-btn');
     const allBtn = document.getElementById('allBtn');
+    tooltip = document.getElementById('tooltip');
 
     actualData = await fetchData();
 
@@ -117,7 +119,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   //Function for displaying tooltip
   async function isEmpty(tbody) {
 
-    const tooltip = document.getElementById('tooltip');
     if(tbody.innerHTML === ''){
       tooltip.style.display = 'block';
     }else{
@@ -163,6 +164,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   
 
   //Function for building table body and not destroying structure
+
   // function bodyBuild(tbody, data) {
   //   tbody.innerHTML = ''; // Clear old rows
   //   for (let i = 0; i < data.length; i++) {
@@ -245,11 +247,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       return unwrappedData;
       } else {
       console.error("Expected 'Items' array but got:", data);
-      return [];  // Return an empty array in case of unexpected format
+      throw new Error('Something went wrong');  // Return an empty array in case of unexpected format
     }
 
     } catch (error) {
-
+      
       console.log(`Error : ${error}`);
       return [];
     }
