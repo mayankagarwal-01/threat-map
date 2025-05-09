@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   //Creating a slight delay so that race condition doesn't occur with token exchange
     await exchangeCodeForToken();
-    token = await sessionStorage.getItem("id_token");
+    token = await localStorage.getItem("id_token");
 
   //If token doesn't exist, hence no authentication then return to login page 
 
@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   //Remove token for user and move to login page
 
     logout.addEventListener('click', function(){
-      sessionStorage.removeItem("id_token");
+      localStorage.removeItem("id_token");
     })
 
     actualData.sort(function(a, b) {
@@ -74,7 +74,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         if (data.id_token) {
           // Store the token and redirect or show app content
-          sessionStorage.setItem("id_token", data.id_token);
+          localStorage.setItem("id_token", data.id_token);
           await new Promise(resolve => setTimeout(resolve, 1000));
           console.log("Login successful!");
           // Optionally remove ?code from URL
@@ -292,7 +292,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       
       //Fetching data only via auth. users
-      const token = sessionStorage.getItem("id_token");
+      const token = localStorage.getItem("id_token");
       const response = await fetch(url, {
         method: "GET",
         headers: {

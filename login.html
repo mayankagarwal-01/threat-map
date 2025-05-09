@@ -138,7 +138,7 @@
 
 //Checking if user has previously logged-in [not checking for session expiration ]
         document.addEventListener("DOMContentLoaded", async () => {
-            const token = sessionStorage.getItem("id_token");
+            const token = localStorage.getItem("id_token");
             if(token){
                 alert("Loading Dashboard...Please wait.");
                 window.location.href = "index.html";
