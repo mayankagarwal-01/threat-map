@@ -1,6 +1,7 @@
 let filteredData;
+let actualData;
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     const table = document.getElementById('threats-table');
     const tbody = table.querySelector('tbody');
     const search_input = document.querySelector('.search-input');
@@ -8,42 +9,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const filterBtns = document.querySelectorAll('.filter-btn');
     const allBtn = document.getElementById('allBtn');
 
-    
-    const actualData = [
-      {
-        "from": "abc@abc.com",
-        "campaign": "Spring Sale",
-        "type": "Urgent",
-        "isActive": true,
-        "date": "2025-05-01"
-      },
-      {
-        "from": "def@def.com",
-        "campaign": "Product Launch",
-        "type": "Medium",
-        "isActive": false,
-        "date": "2025-04-15"
-      },
-      {
-        "from": "ghi@ghi.com",
-        "campaign": "Account Renewal",
-        "type": "Urgent",
-        "isActive": true,
-        "date": "2025-05-07"
-      },
-      {
-        "from": "jkl@jkl.com",
-        "campaign": "Security Alert",
-        "type": "Low",
-        "isActive": true,
-        "date": "2025-05-08"
-      }
-    ];
+    actualData = await fetchData();
+
     filteredData = actualData;
 
+
     actualData.sort(function(a, b) {
-        return new Date(b.date) - new Date(a.date);
-      });
+    // Convert date strings to Date objects and compare
+    return new Date(b.date) - new Date(a.date);
+});
     
     // Build the initial table body using the full dataset.
     bodyBuild(tbody, actualData);
@@ -61,17 +35,36 @@ document.addEventListener("DOMContentLoaded", () => {
     dateHeader.addEventListener('click', async function () {
 
         let order = this.getAttribute('data-order');
+         
+        if (!filteredData || filteredData.length === 0) {
+            filteredData = actualData;
+         }
+
         if(order == 'asc'){
             this.setAttribute('data-order', 'desc');
             filteredData.sort(function(a, b) {
-                return new Date(b.date) - new Date(a.date);
+
+              const dateA = new Date(a.date);
+              const dateB = new Date(b.date);
+              if (isNaN(dateA) || isNaN(dateB)) {
+                return 0;
+             }
+              return dateB - dateA
+
               });
             date.innerHTML = 'Date &#8593;';
             
         }else{
             this.setAttribute('data-order', 'asc');
             filteredData.sort(function(a, b) {
-                return new Date(a.date) - new Date(b.date);
+
+              const dateA = new Date(a.date);
+              const dateB = new Date(b.date);
+              if (isNaN(dateA) || isNaN(dateB)) {
+                return 0;
+              }
+
+              return dateA - dateB;
               });
             date.innerHTML = 'Date &#8595';
             
@@ -81,28 +74,41 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Filter by threat level
     filterBtns.forEach(button => {
-      button.addEventListener('click', function(){
-        const type = this.getAttribute('data-type');
-        if (this.classList.contains('active')){
-            return;
-        };
-        if(type === 'all'){
+      button.addEventListener('click', async function() {
+      const type = this.getAttribute('data-type');
+      if (this.classList.contains('active')) {
+        return;
+      }
+
+      // When the "All" button is clicked
+      if (type === 'all') {
+          // Remove active class from all buttons
           filterBtns.forEach(btn => {
             btn.classList.remove('active');
-            filteredData = actualData;
           });
+
+          // Fetch the actual data only once when the "All" button is clicked
+          actualData = await fetchData();
+          filteredData = actualData;
+
+          // Set the "All" button as active and rebuild the table
           allBtn.classList.add('active');
           bodyBuild(tbody, actualData);
-        }else{
-          if(allBtn.classList.contains('active')){
+        }else {
+          // Remove "All" button's active class if it was active
+          if (allBtn.classList.contains('active')) {
             allBtn.classList.remove('active');
           }
-          this.classList.add('active');
-          handleFilter(tbody, type, actualData);
 
-        }
-      });
+          // Add active class to the clicked filter button
+          this.classList.add('active');
+
+          // Handle filter based on the selected type
+          handleFilter(tbody, type, actualData);
+      }
+     });
     });
+
 
 
   });
@@ -181,7 +187,6 @@ document.addEventListener("DOMContentLoaded", () => {
   //Function for building table body, row click functionality and not destroying structure
   async function bodyBuild(tbody, data) {
     tbody.innerHTML = ''; // Clear old rows
-  
     for (let i = 0; i < data.length; i++) {
       const tr = document.createElement('tr');
   
@@ -206,3 +211,47 @@ document.addEventListener("DOMContentLoaded", () => {
     isEmpty(tbody);
   }
   
+
+  //Fetch data from dynamoDB
+  async function fetchData() {
+
+    const body = document.querySelector("tbody");
+    const url = 'https://u4v38tzuud.execute-api.ap-south-1.amazonaws.com/fetchFromDynamo';
+
+    try {
+      
+      const response = await fetch(url);
+      let data = await response.json();
+
+      if(data && Array.isArray(data) && data.length> 0){
+        const unwrappedData = data.map(item => {
+        return {
+          subject: item.subject.S,
+          isActive: item.isActive.S === 'true',  // Convert to boolean
+          date: item.date.S,  // It's already a string, no conversion needed
+          from: item.from.S,
+          campaign: item.campaign.S,
+          type: item.type.S,  // Assuming 'type' is present
+        };
+      });
+
+      if(unwrappedData){
+        body.classList.remove('skeleton');
+      }else{
+        body.classList.add('skeleton');
+
+      }
+      
+      return unwrappedData;
+      } else {
+      console.error("Expected 'Items' array but got:", data);
+      return [];  // Return an empty array in case of unexpected format
+    }
+
+    } catch (error) {
+
+      console.log(`Error : ${error}`);
+      return [];
+    }
+    
+  }
