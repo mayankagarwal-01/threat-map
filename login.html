@@ -126,12 +126,27 @@
 
             <div class="loginCard">
 
-                <a href="https://ap-south-1sujyelylr.auth.ap-south-1.amazoncognito.com/login?client_id=5nbt5f1u6on96i5ad9693ct9eq&response_type=code&scope=email+openid+phone&redirect_uri=http%3A%2F%2Flocalhost%3A5500%2Findex.html">Sign In</a>
+                <a href="https://ap-south-1sujyelylr.auth.ap-south-1.amazoncognito.com/login?client_id=5nbt5f1u6on96i5ad9693ct9eq&response_type=code&scope=email+openid+profile&redirect_uri=http%3A%2F%2Flocalhost%3A5500%2Findex.html">Sign In</a>
             </div>
 
         </div>
 
     </main>
+
+
+    <script>
+
+//Checking if user has previously logged-in [not checking for session expiration ]
+        document.addEventListener("DOMContentLoaded", async () => {
+            const token = sessionStorage.getItem("id_token");
+            if(token){
+                alert("Loading Dashboard...Please wait.");
+                window.location.href = "index.html";
+            }
+        });
+        
+        
+    </script>
 
 </body>
 </html>

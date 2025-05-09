@@ -126,6 +126,7 @@ exports.handler = async (event) => {
           await dynamo.send(new PutItemCommand({
             TableName: TABLE_NAME,
             Item: {
+              emailUid: {S : uid},
               from: { S: from },
               subject: { S: subject },
               date: { S: date.toISOString() },

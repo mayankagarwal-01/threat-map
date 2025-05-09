@@ -1,25 +1,92 @@
 let filteredData;
 let actualData;
 let tooltip;
+let token;
 
 document.addEventListener("DOMContentLoaded", async () => {
+
+  //Creating a slight delay so that race condition doesn't occur with token exchange
+    await exchangeCodeForToken();
+    token = await sessionStorage.getItem("id_token");
+
+  //If token doesn't exist, hence no authentication then return to login page 
+
+    if (!token) {
+        alert("Not logged in. Redirecting to login...");
+        window.location.href = "login.html"; 
+      }
+    
+      
     const table = document.getElementById('threats-table');
     const tbody = table.querySelector('tbody');
     const search_input = document.querySelector('.search-input');
     const dateHeader = document.getElementById('date');
     const filterBtns = document.querySelectorAll('.filter-btn');
     const allBtn = document.getElementById('allBtn');
+    const logout = document.querySelector('.logout');
+
     tooltip = document.getElementById('tooltip');
 
     actualData = await fetchData();
 
     filteredData = actualData;
 
+  //Remove token for user and move to login page
+
+    logout.addEventListener('click', function(){
+      sessionStorage.removeItem("id_token");
+    })
 
     actualData.sort(function(a, b) {
     // Convert date strings to Date objects and compare
     return new Date(b.date) - new Date(a.date);
 });
+
+
+
+  async function exchangeCodeForToken() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get("code");
+
+      if (!code) { return;} // No code in URL, skip
+
+      const clientId = "5nbt5f1u6on96i5ad9693ct9eq";
+      const redirectUri = "http://localhost:5500/index.html";
+      const tokenEndpoint = "https://ap-south-1sujyelylr.auth.ap-south-1.amazoncognito.com/oauth2/token";
+
+      const body = new URLSearchParams({
+        grant_type: "authorization_code",
+        client_id: clientId,
+        code: code,
+        redirect_uri: redirectUri
+      });
+
+      try {
+        const response = await fetch(tokenEndpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: body.toString()
+        });
+
+        const data = await response.json();
+
+        if (data.id_token) {
+          // Store the token and redirect or show app content
+          sessionStorage.setItem("id_token", data.id_token);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          console.log("Login successful!");
+          // Optionally remove ?code from URL
+          window.history.replaceState({}, document.title, redirectUri);
+        } else {
+          console.error("Token exchange failed:", data);
+          alert("Login failed.");
+        }
+      } catch (err) {
+        console.error("Error during token exchange:", err);
+      }
+    }
     
     // Build the initial table body using the full dataset.
     bodyBuild(tbody, actualData);
@@ -203,8 +270,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   
       // Add a click event for the row
       tr.addEventListener('click', () => {
-        console.log('Row clicked:', data[i]);
-        // You can also show a modal, copy to clipboard, etc. here
+        //Moving data into url for data page access
+        console.log('Row clicked:', data[i].emailUid);
+        const id = data[i].emailUid;
+        window.location.href = `data.html?id=${id}`;;
       });
   
       tbody.appendChild(tr);
@@ -222,12 +291,28 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     try {
       
-      const response = await fetch(url);
+      //Fetching data only via auth. users
+      const token = sessionStorage.getItem("id_token");
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Authorization": token
+        }
+      });
+
+      //If login not proper
+      if (response.status === 401) {
+          alert("Session expired. Please login again.");
+          window.location.href = "login.html";
+      }
+
       let data = await response.json();
 
       if(data && Array.isArray(data) && data.length> 0){
+        
         const unwrappedData = data.map(item => {
         return {
+          emailUid: item.emailUid.S,
           subject: item.subject.S,
           isActive: item.isActive.S === 'true',  // Convert to boolean
           date: item.date.S,  // It's already a string, no conversion needed
