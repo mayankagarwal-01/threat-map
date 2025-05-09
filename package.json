@@ -14,7 +14,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/mayankagarwal-01/neepco-threat-map/issues"
   },
@@ -28,7 +27,7 @@
     "install": "^0.13.0",
     "mailparser": "^3.7.2",
     "npm": "^11.3.0",
-    "oidc-client-ts": "^3.2.1",
+    "openai": "^4.98.0",
     "pdfkit": "^0.17.1",
     "stream-buffers": "^3.0.3"
   }

@@ -1,4 +1,5 @@
 // Required Libraries
+ const { main } = require('./promptProcessor.js'); 
 const imaps = require('imap-simple');
 const PDFDocument = require('pdfkit');
 const { WritableStreamBuffer } = require('stream-buffers');
@@ -41,7 +42,7 @@ exports.handler = async (event) => {
     const creds = JSON.parse(secretResponse.SecretString);
 
     //API CREDENTIALS
-    const AI_API = creds.AI_API;
+    const API_KEY = creds.API_KEY;
 
 
 
@@ -94,8 +95,9 @@ exports.handler = async (event) => {
 
 
           //Waiting for response on Threat campaign, type and suspected I.P.(s)
-          const responseAI = await promtProcessor(body, AI_API);
-
+        
+          const responseAI = await main(API_KEY, body);
+          console.log(responseAI);
 
 
           //Writing PDF in Memory not disk, keeps data safe even at rest
@@ -109,10 +111,16 @@ exports.handler = async (event) => {
           doc.fontSize(12).text(body || '[No content]');
           doc.end();
 
+          
+          const match = from.match(/<([^>]+)>/);
+          const emailOnly = match ? match[1] : null;
+
+
           //When PDF is written, an object is made available for operating on it
           await new Promise(resolve => doc.on('end', resolve));
           const pdfBuffer = bufferWriter.getContents();
           const filename = `email_${uid}_${Date.now()}.pdf`;
+
 
           //AWS S3 Bucket stores PDF 
           await s3.send(new PutObjectCommand({
@@ -122,19 +130,19 @@ exports.handler = async (event) => {
             ContentType: 'application/pdf'
           }));
 
-          //AWS DynamoDB stores PDF metadata
+          // //AWS DynamoDB stores PDF metadata
           await dynamo.send(new PutItemCommand({
             TableName: TABLE_NAME,
             Item: {
-              emailUid: {S : uid},
-              from: { S: from },
+              emailUid : {S : String(uid)},
+              from: { S: emailOnly },
               subject: { S: subject },
               date: { S: date.toISOString() },
               s3Key: { S: `emails/${filename}` },
               campaign: { S: responseAI.campaign },
               type: { S: responseAI.type},
               suspect_ip: { S: responseAI.suspect_ip},
-              isActive: { S: true}
+              isActive: { S: 'true'}
             }
           }));
 
@@ -172,72 +180,4 @@ exports.handler = async (event) => {
     }
   }
 };
-
-
-
-//Function for Prompt Processing
-async function promtProcessor(email, API) {
-
-  const prompt = `
-  Given the following email content, extract the following fields in JSON & RESPOND ONLY FINAL ANSWER:
-  - Threat Campaign
-  - Severity of Threat (High, Medium, Low, Urgent) adjust for nuance
-  - Suspected IPs of Threat
-  the JSON format should be :
-  - campaign
-  - type
-  - suspect_ip
-  Email:
-  ${email}
-  `;
-
-  //Generating a response from AI to get Threat properties 
-  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-          "Authorization": `Bearer ${API}`,
-          "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-          "model": "microsoft/phi-4-reasoning:free",
-          "messages": [
-              {
-                  "role": "user",
-                  "content": prompt
-              }
-          ]
-      })
-  });
-
-  //Conversion to JSON format
-  const jsonResponse = await response.json();
-  const result =  jsonResponse.choices[0].message.content;
-
-  const matches = [...result.matchAll(/{[\s\S]*?}/g)];
-
-
-  if (matches.length > 0) {
-  // Get the last JSON-like block
-  let lastJsonLike = matches[matches.length - 1][0];
-
-  // Fix format to valid JSON
-  lastJsonLike = lastJsonLike.replace(/(\w+)\s*:\s*([^,\n}]+)/g, (m, key, value) => {
-      key = `"${key.trim()}"`;
-      value = `"${value.trim()}"`;
-      return `${key}: ${value}`;
-  });
-
-  let parsed;
-  try {
-      parsed = JSON.parse(lastJsonLike);
-      return parsed;
-  } catch (e) {
-      console.error("Failed to parse JSON:", e);
-      return e;
-  }
-  } else {
-  console.log("No JSON-like structure found.");
-  return "Error"
-}
-}
 
