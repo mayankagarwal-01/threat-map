@@ -30,7 +30,7 @@
 
     </header>
 
-    <main>
+    <main id="threats" class="active">
 
       <div class="filters">
 
@@ -87,7 +87,67 @@
       
 
     </main>
-<script src="table.js"></script>
+
+    <main id="threat-data">
+
+      <div class="threat-data-container">
+
+        <div class="threatNavigation">
+          <i class="fa-solid fa-arrow-left returnBtn"></i>
+
+          <h2>Threat Data</h2>
+
+          <div class="isActiveBtn">
+            <i class="fa-solid fa-box-archive"></i>
+            <h4 id="isActiveText">Mark inactive</h4>
+          </div>
+
+        </div>
+
+
+        <div class="data-parsed">
+
+          <p><strong>From:</strong> <span id="data_from"> email_dummy@gmail.com</span></p>
+          <p><strong>Subject:</strong> <span id="data_subject"> Lorem ipsum dolor sit amet, consectetur adipisicing elit. Nihil, deserunt!</span></p>
+          <p><strong>Date:</strong> <span id="data_date"> 20-10-2000 </span></p>
+          <p><strong>Threat Campaign:</strong> <span id="data_campaign"> Urgent</span></p>
+          <p><strong>Threat Level:</strong> <span id="data_level"> Urgent</span></p>
+          <p><strong>Summary:</strong> <span id="data_summary"> Lorem ipsum dolor sit amet consectetur adipisicing elit. Dignissimos, repellendus ad sapiente nihil provident veniam fugit suscipit necessitatibus et repellat fuga ea doloremque corrupti sunt reiciendis voluptatibus, quidem dolorum vero.</span></p>
+          <p><strong>Suspect I.P.(s):</strong>
+            <span>
+              <ul style="list-style: disc; padding: 0 0 0 1rem;" id="data_ip">
+              </ul>
+            </span>
+          </p>
+
+          <p><strong>Remarks:</strong>
+            <span>
+              <ul style="list-style: disc; padding: 0 0 0 1rem;" id="data_remark">
+              </ul>
+            </span>
+          </p>
+
+          <div class="data-action">
+
+            <button class="bg-gray-200"><i class="fa-solid fa-file-pdf"></i> View Report</button>
+            <button class="bg-gray-200"><i class="fa-solid fa-file-export"></i> Generate Report</button>
+            <button class="bg-gray-200"><i class="fa-solid fa-pen-to-square"></i> Add Remark</button>
+
+          </div>
+
+
+
+
+
+        </div>
+
+        
+
+      </div>
+
+    </main>
+
+<script src="index.js"></script>
 
 
 </body>

@@ -1,9 +1,9 @@
 // Required Libraries
  const { main } = require('./promptProcessor.js'); 
 const imaps = require('imap-simple');
-const PDFDocument = require('pdfkit');
 const { WritableStreamBuffer } = require('stream-buffers');
 const { simpleParser } = require('mailparser');
+const PDFDocument = require('pdfkit');
 
 
 // AWS SDK v3 imports
@@ -76,18 +76,28 @@ exports.handler = async (event) => {
         const uid = msg.attributes.uid;
         if (processedUIDs.has(uid)) continue;
 
-        //Conversion of RAW data to Structured data
-        const allParts = msg.parts.find(p => p.which === '');
+        // Extract raw message part
+        const allParts = msg?.parts?.find(p => p.which === '');
+        if (!allParts?.body) {
+          throw new Error('Email message body not found.');
+        }
+
+        // Parse raw email content
         const parsed = await simpleParser(allParts.body);
 
-        const subject = parsed.subject || '';
-        const body = parsed.text || parsed.html || '';
+        // Structured fields
+        const subject = parsed.subject || '[No Subject]';
         const from = parsed.from?.text || 'Unknown Sender';
-        const date = parsed.date || new Date();
+        const date = parsed.date ? parsed.date.toISOString() : new Date().toISOString();
+
+        // Prefer HTML body if available for formatting
+        const htmlBody = parsed.html || `<pre>${parsed.text || '[No content]'}</pre>`;
+        const rawTextBody = parsed.text || parsed.html || '[No content]';
+
 
         //Keywords based email check
         const isThreat = KEYWORDS.some(keyword =>
-          subject.toLowerCase().includes(keyword) || body.toLowerCase().includes(keyword)
+          subject.toLowerCase().includes(keyword) || rawTextBody.toLowerCase().includes(keyword)
         );
 
 
@@ -96,10 +106,10 @@ exports.handler = async (event) => {
 
           //Waiting for response on Threat campaign, type and suspected I.P.(s)
         
-          const responseAI = await main(API_KEY, body);
+          const responseAI = await main(API_KEY, rawTextBody);
           console.log(responseAI);
 
-
+          // Build HTML safely
           //Writing PDF in Memory not disk, keeps data safe even at rest
           const bufferWriter = new WritableStreamBuffer();
           const doc = new PDFDocument();
@@ -108,19 +118,18 @@ exports.handler = async (event) => {
           doc.text(`Subject: ${subject}`);
           doc.text(`Date: ${date}`);
           doc.moveDown();
-          doc.fontSize(12).text(body || '[No content]');
+          doc.fontSize(12).text(rawTextBody || '[No content]');
           doc.end();
-
-          
-          const match = from.match(/<([^>]+)>/);
-          const emailOnly = match ? match[1] : null;
-
 
           //When PDF is written, an object is made available for operating on it
           await new Promise(resolve => doc.on('end', resolve));
           const pdfBuffer = bufferWriter.getContents();
           const filename = `email_${uid}_${Date.now()}.pdf`;
 
+
+          
+          const match = from.match(/<([^>]+)>/);
+          const emailOnly = match ? match[1] : null;
 
           //AWS S3 Bucket stores PDF 
           await s3.send(new PutObjectCommand({
@@ -137,10 +146,11 @@ exports.handler = async (event) => {
               emailUid : {S : String(uid)},
               from: { S: emailOnly },
               subject: { S: subject },
-              date: { S: date.toISOString() },
+              date: { S: date },
               s3Key: { S: `emails/${filename}` },
               campaign: { S: responseAI.campaign },
               type: { S: responseAI.type},
+              summary: { S: responseAI.summary},
               suspect_ip: { S: responseAI.suspect_ip},
               isActive: { S: 'true'}
             }
