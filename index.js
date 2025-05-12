@@ -45,6 +45,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const data_remark = document.getElementById("data_remark");
     const isActiveText = document.getElementById("isActiveText");
 
+    const viewReport = document.getElementById("view-report");
+    const genReport = document.getElementById("gen-report");
+    const remarkReport = document.getElementById("add-remark-report");
+
+
 
     actualData = await fetchCompleteData();
 
@@ -75,6 +80,49 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
     });
 
+    viewReport.addEventListener('click', async function(){
+        
+        const url = 'https://nwzy9don99.execute-api.ap-south-1.amazonaws.com/default/get-pdf-url'
+        const token = localStorage.getItem("id_token");
+        const pdfKey = session_threat_data.s3Key;
+
+
+        try {
+
+          const response = await fetch(`${url}?key=${encodeURIComponent(pdfKey)}`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+          //If login not proper
+          if (response.status === 401) {
+              alert("Session expired. Please login again.");
+              localStorage.clear();
+              window.location.href = "login.html";
+              return;
+          }
+
+          let data = await response.json();
+          if(data.presignedUrl){
+            window.location.href = data.presignedUrl;
+          }
+      
+          
+        } catch (error) {
+          console.log(`Error loading pdf : ${error}`)
+        }
+
+      
+    });
+        
+
+
+
+
+
+    
 
     
   //Remove token for user and move to login page

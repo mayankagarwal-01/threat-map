@@ -8,6 +8,8 @@ const openai = new OpenAI({
         baseURL: 'https://api.deepseek.com',
         apiKey: API
 });
+
+
 const prompt = `
   Given the following email content, extract the following fields in JSON & RESPOND ONLY FINAL ANSWER:
   - Threat Campaign (campaign)
@@ -17,7 +19,7 @@ const prompt = `
   the JSON format should be :
   - campaign
   - type
-  - suspect_ip (string format only, if non-existent 'Not Available')
+  - suspect_ip (string format only with port no., if non-existent 'Not Available')
   - summary
   Email:
   ${email}
@@ -34,3 +36,4 @@ const prompt = `
 }
 
 module.exports = { main };
+
