@@ -28,7 +28,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     const filterBtns = document.querySelectorAll('.filter-btn');
     const allBtn = document.getElementById('allBtn');
     const logout = document.querySelector('.logout');
-
     tooltip = document.getElementById('tooltip');
 
     const main_threat = document.getElementById("threats");
@@ -47,8 +46,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const viewReport = document.getElementById("view-report");
     const genReport = document.getElementById("gen-report");
-    const remarkReport = document.getElementById("add-remark-report");
-
+    const edit_remarkReport = document.getElementById("edit-remark-report");
+    const data_action = document.querySelector('.data-action');
+    const data_remark_editor = document.querySelector('.data-remark-editor');
+    const cancelRemark = document.getElementById('data-remark-cancel');
+    const saveRemark = document.getElementById('data-remark-save');
+    const remarkText = document.getElementById('remark-textarea');
 
 
     actualData = await fetchCompleteData();
@@ -57,11 +60,13 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
     //Return button functionality
-    returnBtn.addEventListener('click', function(){
+    returnBtn.addEventListener('click',async function(){
 
         //Remove data history
         sessionStorage.removeItem('threat_data');
-        
+        filteredData = await fetchCompleteData();
+        bodyBuild(tbody, filteredData);
+
         //Remove id from url for any functionality
         const url = new URL(window.location.href);
         url.searchParams.delete('id');
@@ -89,26 +94,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         try {
 
-          const response = await fetch(`${url}?key=${encodeURIComponent(pdfKey)}`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        });
-
-          //If login not proper
-          if (response.status === 401) {
-              alert("Session expired. Please login again.");
-              localStorage.clear();
-              window.location.href = "login.html";
-              return;
-          }
-
-          let data = await response.json();
+          const data = await getAuth(`${url}?key=${encodeURIComponent(pdfKey)}`, token);
           if(data.presignedUrl){
             window.location.href = data.presignedUrl;
           }
-      
           
         } catch (error) {
           console.log(`Error loading pdf : ${error}`)
@@ -118,7 +107,85 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
         
 
+    edit_remarkReport.addEventListener('click', async function(){
 
+      if(session_threat_data.remarks){
+
+        const remarks_list = session_threat_data.remarks.replace(/&&&/g, '\n');
+        remarkText.value = remarks_list;
+      }
+      
+      showLayout(data_action,data_remark_editor );
+
+    });
+
+    cancelRemark.addEventListener('click', async function(){
+
+      showLayout(data_remark_editor, data_action);
+      remarkText.value = '';
+      
+    });
+
+    saveRemark.addEventListener('click', async function () {
+      const token = localStorage.getItem('id_token');
+      const remarks = remarkText.value.replace(/\n/g, '&&&'); // FIXED: regex usage
+
+      const systemUrl = new URL(window.location.href);
+      const key = systemUrl.searchParams.get('id');
+
+      if (!key) {
+        alert("Missing ID in URL.");
+        return;
+      }
+
+      const url = `https://o8cbj2fli2.execute-api.ap-south-1.amazonaws.com/default/updateData`; // FIXED: path param usage
+
+      try {
+        const response = await fetch(`${url}?id=${encodeURIComponent(key)}&fromValue=${encodeURIComponent(session_threat_data.from)}`, {
+          method: "PUT",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ remarks })}); // FIXED: renamed to match Lambda code);
+
+        if (response.status === 401) {
+          alert("Session expired. Please login again.");
+          localStorage.clear();
+          window.location.href = "login.html";
+          return;
+        }
+
+        const data = await response.json();
+
+        if (response.status === 400 || response.status === 500) {
+          alert(`Error: ${data.error}`);
+          return;
+        }
+
+        if (response.status === 200) {
+          alert(data.message);
+          showLayout(data_remark_editor, data_action);
+
+          filteredData = await fetchCompleteData();
+          const urlParams = new URLSearchParams(window.location.search);
+          
+          for( let i=0;i<filteredData.length;i++){
+            console.log(filteredData[i].emailUid);
+            if(filteredData[i].emailUid === urlParams.get("id")){
+              session_threat_data = filteredData[i];
+              addDataView(filteredData[i]);
+            }
+
+        }
+        }
+
+      } catch (error) {
+        alert(`Error: ${error.message}`);
+      }
+      
+      
+    });
 
 
 
@@ -134,11 +201,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     actualData.sort(function(a, b) {
     // Convert date strings to Date objects and compare
     return new Date(b.date) - new Date(a.date);
-});
+    });
 
 
 
-  async function exchangeCodeForToken() {
+    async function exchangeCodeForToken() {
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get("code");
 
@@ -188,7 +255,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Listen for search input and filter the table.
     search_input.addEventListener('keyup', async function () {
       const value = this.value;
-      console.log('Value:', value);
       const searchData = await searchTable(value, filteredData);
       bodyBuild(tbody, searchData);
     });
@@ -342,7 +408,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         main_threat_data = document.getElementById("threat-data");
 
         session_threat_data = data[i];
-        console.log('Row clicked:',id);
         
         const url = new URL(window.location.href);
         url.searchParams.set('id', id);
@@ -350,21 +415,20 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         //Change views with transition
         showLayout(main_threat, main_threat_data);
-        addDataView(session_threat_data);
-  
+        addDataView(data[i]);
 
         
       });
   
       tbody.appendChild(tr);
     }
-  
+    console.log('body built');
     isEmpty(tbody);
 }
 
 async function showLayout(activeLayout, newActiveLayout) {
   // Prepare the new layout (make it visible and animatable)
-  newActiveLayout.style.display = 'block'; 
+  newActiveLayout.style.display = 'flex'; 
   requestAnimationFrame(() => {
     newActiveLayout.classList.add('active'); // fade in
     activeLayout.classList.remove('active'); // start fade out
@@ -385,7 +449,6 @@ async function addDataView(params) {
   
   if(params){
    
-    console.log(params)
     data_from.textContent = params.from;
     data_subject.textContent = params.subject;
     data_date.textContent = params.date;
@@ -404,7 +467,7 @@ async function addDataView(params) {
     }
     
     if(params.remarks){
-      const list = params.remarks.split('$$$');
+      const list = params.remarks.split('&&&');
       list.forEach(remark => {
         data_remark.innerHTML += `<li>${remark}</li>`;
       })
@@ -432,24 +495,9 @@ async function addDataView(params) {
       
       //Fetching data only via auth. users
       const token = localStorage.getItem("id_token");
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "Authorization": token
-        }
-      });
-
-      //If login not proper
-      if (response.status === 401) {
-          alert("Session expired. Please login again.");
-          localStorage.clear();
-          window.location.href = "login.html";
-      }
-
-      let data = await response.json();
+      const data = await getAuth(url, token);
 
       if(data && Array.isArray(data) && data.length> 0){
-        
         const unwrappedData = data.map(item => {
           const formattedDate = new Date(item.date.S).toLocaleString('en-IN', {
           timeZone: 'Asia/Kolkata',
@@ -457,6 +505,7 @@ async function addDataView(params) {
           timeStyle: 'short',
           hour12: true
         });
+
         return {
           from: item.from.S,
           date: formattedDate,
@@ -467,7 +516,8 @@ async function addDataView(params) {
           subject: item.subject.S,
           summary: item.summary.S,
           suspect_ip: item.suspect_ip.S,
-          type: item.type.S
+          type: item.type.S,
+          remarks: item.remarks.S ?? 'N/A'
         };
       });
 
@@ -488,6 +538,34 @@ async function addDataView(params) {
     }finally{
       bodyBuild(body,filteredData);
       console.log("DATA FETCHED!!!!!!!")
+    }
+    
+  }
+
+  async function getAuth(url, token){
+
+    try {
+      
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Authorization": token
+        }
+      });
+
+      //If login not proper
+      if (response.status === 401) {
+          alert("Session expired. Please login again.");
+          localStorage.clear();
+          window.location.href = "login.html";
+          return null;
+      }
+
+      let data = await response.json();
+      return data;
+
+    } catch (error) {
+      return error;
     }
     
   }

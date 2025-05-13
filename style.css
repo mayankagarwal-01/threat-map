@@ -171,11 +171,36 @@ main#threat-data .threat-data-container{
     font-size: 18px;
 }
 
+.data-remark-editor,
 .data-action{
-    display: flex;
-    justify-content: space-around;
-    margin-top: 0.5rem;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    pointer-events: none;
+    height: auto;
 }
+
+.data-remark-editor{
+    display: none;
+}
+
+.data-remark-editor.active,
+.data-action.active {
+  display: flex;
+  width: 100%; 
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  margin-top: 0.5rem;
+  justify-content: space-around;
+
+}
+
+.data-remark-editor.active{
+    flex-direction: column;
+    gap: 1rem;
+}
+
 
 .data-action button{
     cursor: pointer;
@@ -185,7 +210,38 @@ main#threat-data .threat-data-container{
     width: 18%;
 }
 
+.data-remark{
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 1rem;
+    gap: 1rem;
+}
 
+#remark-textarea{
+    border: 1px var(--text-secondary) solid;
+    width: 100%;
+    height: 300px;
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+.data-remark-btn{
+    display: flex;
+    gap: 1rem;
+    padding: 0.5rem;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.data-remark-btn button{
+    padding: 0.75rem;
+    color: var(--text-dark);
+    width: 25%;
+    border-radius: 0.25rem;
+    cursor: pointer;
+}
 
 .filters{
     width: 100%;

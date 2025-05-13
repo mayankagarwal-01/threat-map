@@ -127,11 +127,21 @@
             </span>
           </p>
 
-          <div class="data-action">
+          <div class="data-action active">
 
             <button class="bg-gray-200" id="view-report"><i class="fa-solid fa-file-pdf"></i> View Report</button>
             <button class="bg-gray-200" id="gen-report"><i class="fa-solid fa-file-export"></i> Generate Report</button>
-            <button class="bg-gray-200" id="add-remark-report"><i class="fa-solid fa-pen-to-square"></i> Add Remark</button>
+            <button class="bg-gray-200" id="edit-remark-report"><i class="fa-solid fa-pen-to-square"></i> Add Remark</button>
+
+          </div>
+
+          <div class="data-remark-editor">
+
+            <textarea name="remarks" id="remark-textarea" placeholder="Add Remarks"></textarea>
+            <div class="data-remark-btn">
+              <button class="bg-red-300" id="data-remark-cancel"><i class="fa-solid fa-ban"></i></i> Cancel</button>
+              <button class="bg-green-300" id="data-remark-save"><i class="fa-solid fa-cloud-arrow-up"></i></i> Save</button>
+            </div>
 
           </div>
 
