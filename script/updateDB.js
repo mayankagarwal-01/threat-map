@@ -18,6 +18,10 @@ exports.handler = async (event) => {
     }
 
     const partitionKeyValue = event.queryStringParameters?.id;
+    const fromValue = event.queryStringParameters?.fromValue;
+    const updateType = event.queryStringParameters?.type || 'remarks';
+
+
 
 
     if (!partitionKeyValue) {
@@ -27,6 +31,16 @@ exports.handler = async (event) => {
           "Access-Control-Allow-Origin": "*",
         },
         body: JSON.stringify({ error: "Missing ID in the URL path" })
+      };
+    }
+
+    if (!fromValue) {
+      return {
+        statusCode: 400,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+        },
+        body: JSON.stringify({ error: "Missing From Value in the URL path" })
       };
     }
 
@@ -43,8 +57,48 @@ exports.handler = async (event) => {
         body: JSON.stringify({ error: "Invalid JSON in request body" })
       };
     }
+
+    if(updateType === 'activity'){
+      const { activity } = parsedBody;
+      if(activity === undefined){
+        return {
+          statusCode: 400,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+          },
+          body: JSON.stringify({ error: "Missing 'Activity' in request body" })
+        };
+      }
+      const updateValue = !(activity.toString() === 'true');
+      const command = new UpdateItemCommand({
+        TableName: tableName,
+        Key: {
+          "emailUid": { S: partitionKeyValue },
+          "from": { S: fromValue},
+        },
+        UpdateExpression: "SET isActive = :activity",
+        ExpressionAttributeValues: {
+          ":activity": { S: updateValue.toString() }
+        },
+        ReturnValues: "ALL_NEW"
+      });
+  
+      const response = await client.send(command);
+  
+      return {
+        statusCode: 200,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+        },
+        body: JSON.stringify({
+          message: "Activity updated successfully",
+        })
+      };
+
+
+    }
+
     const { remarks } = parsedBody;
-    console.log(remarks);
 
 
     if (remarks === undefined) {
@@ -62,7 +116,7 @@ exports.handler = async (event) => {
       TableName: tableName,
       Key: {
         "emailUid": { S: partitionKeyValue },
-        "from": { S: "default"},
+        "from": { S: fromValue},
       },
       UpdateExpression: "SET remarks = :remarks",
       ExpressionAttributeValues: {
@@ -84,13 +138,13 @@ exports.handler = async (event) => {
     };
 
   } catch (error) {
-    console.error("Error updating remarks:", error);
+    console.error("Error updating data:", error);
     return {
       statusCode: 500,
       headers: {
         "Access-Control-Allow-Origin": "*",
       },
-      body: JSON.stringify({ error: "Failed to update remarks", details: error.message })
+      body: JSON.stringify({ error: "Failed to update data", details: error.message })
     };
   }
 };
