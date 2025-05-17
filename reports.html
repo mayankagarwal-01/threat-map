@@ -51,7 +51,7 @@
             </div>
 
             <div>
-                <label for="date">Date Range :</label>
+                <label>Date Range :</label>
                 <input type="date" name="from-date" id="from-date">
                 <h3>to</h3>
                 <input type="date" name="upto-date" id="upto-date">
@@ -93,7 +93,55 @@
 
     </dialog>
 
+    <main id="all-reports" class="active">
 
+        <div class="filters">
+            
+            <button id="gen-btn-report"><i class="fa-solid fa-file-pdf"></i> Generate</button>
+
+          <div class="report-type">
+
+            <h3> Type of Report : </h3>
+            <button id="allBtn" class="filter-btn active" data-type="all">All</button>
+            <button class="filter-btn" data-type="sender">Sender</button>
+            <button class="filter-btn" data-type="threat_analysis">Threat Analysis</button>
+            <button class="filter-btn" data-type="activity_analysis">Activity Analysis</button>
+
+          </div>
+
+
+
+      </div>
+
+        <div class="reports overflow-auto">
+
+        <table id="reports-table" class="table table-fixed text-left tracking-wider">
+          <thead class="bg-gray-200 border-b-2 border-gray-200">
+            <tr>
+              <th scope="col" class="p-4 w-5">#</th>
+              <th scope="col" class="p-4 w-30">Report Name</th>
+              <th id="date" data-column="date" data-order="desc" scope="col" class="p-4 w-20">Date &#8593</th>
+              <th scope="col" class="p-4 w-12">Download</th>
+
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#edf0f1] skeleton">
+
+            <tr>
+              <th scope="row">1</th>
+              <td>LOADING</td>
+              <td>LOADING</td>
+              <td><i class="fa-solid fa-download" index=1></i></td>
+
+            </tr>
+            
+          </tbody>
+        </table>
+
+        </div>
+
+
+    </main>
 
 
 </body>

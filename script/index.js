@@ -80,8 +80,64 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     isActiveBtn.forEach(btn => {
-    btn.addEventListener('click', function() {
-        console.log("Is Active:", this.textContent);
+    btn.addEventListener('click', async function() {
+
+      btn.disabled = true;
+      const activity = session_threat_data.isActive;
+      const systemUrl = new URL(window.location.href);
+      const key = systemUrl.searchParams.get('id');
+
+      if (!key) {
+        alert("Missing ID in URL.");
+        return;
+      }
+
+      const url = `https://o8cbj2fli2.execute-api.ap-south-1.amazonaws.com/default/updateData`;
+      try {
+        const response = await fetch(`${url}?id=${encodeURIComponent(key)}&fromValue=${encodeURIComponent(session_threat_data.from)}&type=activity`, {
+          method: "PUT",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ activity })}); 
+
+        if (response.status === 401) {
+          alert("Session expired. Please login again.");
+          localStorage.clear();
+          window.location.href = "login.html";
+          return;
+        }
+
+        const data = await response.json();
+
+        if (response.status === 400 || response.status === 500) {
+          alert(`Error: ${data.error}`);
+          return;
+        }
+
+        if (response.status === 200) {
+          alert(data.message);
+
+          filteredData = await fetchCompleteData();
+          const urlParams = new URLSearchParams(window.location.search);
+          
+          for( let i=0;i<filteredData.length;i++){
+            console.log(filteredData[i].emailUid);
+            if(filteredData[i].emailUid === urlParams.get("id")){
+              session_threat_data = filteredData[i];
+              markActivity(session_threat_data.isActive);
+            }
+
+        }
+        }
+      } catch (error) {
+        alert(`Error: ${error.message}`);
+      }finally{
+        btn.disabled = false;
+      }
+      
+
         });
     });
 
@@ -127,7 +183,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     saveRemark.addEventListener('click', async function () {
-      const token = localStorage.getItem('id_token');
+      saveRemark.disabled = true;
       const remarks = remarkText.value.replace(/\n/g, '&&&'); // FIXED: regex usage
 
       const systemUrl = new URL(window.location.href);
@@ -181,15 +237,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       } catch (error) {
         alert(`Error: ${error.message}`);
+      }finally{
+        saveRemark.disabled = false;
       }
       
       
     });
-
-
-
-    
-
     
   //Remove token for user and move to login page
 
@@ -207,8 +260,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     async function exchangeCodeForToken() {
       const urlParams = new URLSearchParams(window.location.search);
       const code = urlParams.get("code");
-
-      if (!code) { return;} // No code in URL, skip
+      if (!code) {  // No code in URL, skip
+        const url = new URL(window.location.href);
+        url.searchParams.delete('id');
+        window.history.pushState({}, '', url);
+        return;
+      }
 
       const clientId = "5nbt5f1u6on96i5ad9693ct9eq";
       const redirectUri = "http://localhost:5500/index.html";
@@ -421,7 +478,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   
       tbody.appendChild(tr);
     }
-    console.log('body built');
     isEmpty(tbody);
 }
 
@@ -474,13 +530,18 @@ async function addDataView(params) {
       data_remark.innerHTML = `<li>Not Available</li>`;
     }
 
-    if(!params.isActive){
-      isActiveText.textContent = 'Mark active';
-    }
-
+    markActivity(params.isActive)
     
   }
 
+}
+
+function markActivity(activity){
+  if(!activity){
+      isActiveText.textContent = 'Mark active';
+    }else{
+      isActiveText.textContent = 'Mark inactive';
+    }
 }
   
 
@@ -538,7 +599,6 @@ async function addDataView(params) {
       return [];
     }finally{
       bodyBuild(body,filteredData);
-      console.log("DATA FETCHED!!!!!!!")
     }
     
   }

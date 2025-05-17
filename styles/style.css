@@ -47,6 +47,13 @@ h2{
     font-weight: bold;
 }
 
+button:disabled,
+div:disabled,
+i:disabled,
+h3:disabled{
+    cursor: not-allowed;
+}
+
 
 
 
@@ -199,7 +206,6 @@ main#threat-data .threat-data-container{
   pointer-events: auto;
   margin-top: 0.5rem;
   justify-content: space-around;
-
 }
 
 .data-remark-editor.active{
