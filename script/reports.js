@@ -171,38 +171,28 @@ document.addEventListener("DOMContentLoaded", async () => {
         closeDialog();
     });
 
-    filterBtns.forEach(button => {
-      button.addEventListener('click', async function() {
-      const type = this.getAttribute('data-type');
-      
-      // When the "All" button is clicked
-      if (type === 'all') {
-          // Remove active class from all buttons
-          filterBtns.forEach(btn => {
-            btn.classList.remove('active');
-          });
+    const filterSelect = document.getElementById('filterSelect');
 
-          // Fetch the actual data only once when the "All" button is clicked
-          reportData = await fetchData('TABLE2');
-          filteredData = [...reportData];
+        // On change of select option
+        filterSelect.addEventListener('change', async function () {
+        const selectedType = this.value;
 
-          // Set the "All" button as active and rebuild the table
-          allBtn.classList.add('active');
-          bodyBuild(tbody, reportData);
-        }else {
-          // Remove "All" button's active class if it was active
-          if (allBtn.classList.contains('active')) {
-            allBtn.classList.remove('active');
-          }
+        if (selectedType === 'all') {
+            // Refetch full data
+            if (reportData.length === 0) {
+            reportData = await fetchData('TABLE2');
+            }
+            filteredData = [...reportData];
+        } else {
+            // Filter based on s3Key prefix
+            filteredData = reportData.filter(item =>
+            item.s3Key.replace('reports/', '').startsWith(selectedType)
+            );
+        }
 
-          // Add active class to the clicked filter button
-          this.classList.add('active');
-
-          // Handle filter based on the selected type
-          handleFilter(tbody, reportData);
-      }
-     });
+        bodyBuild(tbody, filteredData);
     });
+
 });
 
 function updateView(){
@@ -223,6 +213,7 @@ function showDialog() {
     if (dialog) {
         dialog.showModal();
         dialog.style.visibility = 'visible';
+        dialog.style.display = 'flex';
         reportType.value = 'default'
     }
 }
@@ -230,30 +221,29 @@ function showDialog() {
 function closeDialog() {
     if (dialog && dialog.open) {
         dialog.style.visibility = 'collapse';
+        dialog.style.display = 'none';
         dialog.close();
     }
 }
 
 async function handleFilter(table_body, metadata) {
+  const selectedType = document.getElementById('filterSelect').value.toLowerCase();
 
-    const activeTypes = Array.from(document.querySelectorAll('.filter-btn.active'))
-    .map(btn => btn.getAttribute('data-type').toLowerCase())
-    .filter(type => type !== 'all');
-
-    if (activeTypes.length === 0) {
-      // If "All" is active or nothing else is active, show full data
-      filteredData = metadata;
-    } else {
-      // Filter based on selected types
+  if (selectedType === 'all') {
+    // Show full data
+    filteredData = metadata;
+  } else {
+    // Filter based on selected type
     filteredData = metadata.filter(item =>
-        activeTypes.some(type =>
-        item.s3Key.replace('reports/', '').startsWith(type)));
-    }
+      item.s3Key.replace('reports/', '').startsWith(selectedType)
+    );
+  }
 
-    bodyBuild(table_body, filteredData);
+  bodyBuild(table_body, filteredData);
 }
 
-  //Function for building table body, row click functionality and not destroying structure
+
+//Function for building table body, row click functionality and not destroying structure
 async function bodyBuild(tbody, metadata) {
     tbody.innerHTML = ''; // Clear old rows
     for (let i = 0; i < metadata.length; i++) {
