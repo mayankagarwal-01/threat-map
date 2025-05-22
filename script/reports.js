@@ -214,7 +214,9 @@ function showDialog() {
         dialog.showModal();
         dialog.style.visibility = 'visible';
         dialog.style.display = 'flex';
-        reportType.value = 'default'
+        reportType.value = 'default';
+        const event = new Event('change', { bubbles: true });
+        reportType.dispatchEvent(event);
     }
 }
 
@@ -334,6 +336,7 @@ async function generateReport(by, sender, threat_type, activity, fromDate, uptoD
     const uptoDateObj = new Date(uptoDate);
     
     required_Metadata = [];
+    console.log(by);
 
     const confirmGen = document.getElementById('confirmGen');
     if (by === 'default') {

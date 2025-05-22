@@ -34,7 +34,7 @@
     <main id="no-reports">
             <h2>No reports found</h2>
             <p>Generate a new report</p>
-            <img style="height: 300px; width: 300px;" src="assets/robot.png" alt="no reports">
+            <img style="height: 300px; width: 300px;" src="assets/robot.png" alt="no reports" loading="lazy">
             <button class="gen-btn"><i class="fa-solid fa-file-pdf"></i> Generate Report</button>
     </main>
 
@@ -72,9 +72,10 @@
             <div id="threat">
                 <label for="type-list">Select Severity : </label>
                 <select name="type-list" id="type-list">
+                    <option value="Urgent">Urgent</option>
                     <option value="High">High</option>
-                    <option value="type2">Type 2</option>
-                    <option value="type3">Type 3</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
 
                 </select>
             </div>

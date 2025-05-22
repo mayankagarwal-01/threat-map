@@ -6,11 +6,16 @@ const s3 = new S3Client({ region: 'ap-south-1' });
 const dynamo = new DynamoDBClient({ region: 'ap-south-1' });
 
 exports.handler = async (event) => {
+
+  try {
+
+
   const data = JSON.parse(event.body); // or event directly if not using API Gateway
   
   // Extract query parameters if available
   const queryParams = event.queryStringParameters || {};
-  const reportType = queryParams.id || 'threat_type';
+
+  const reportType = event.queryStringParameters?.id || 'report';
 
   const BUCKET_NAME = process.env.BUCKET_NAME;
   const TABLE_NAME = process.env.TABLE_NAME;
@@ -31,8 +36,8 @@ exports.handler = async (event) => {
   doc.fontSize(12).text(`Date: ${new Date().toUTCString()}`);
   
   // Add report type information if specialized report
-  if (reportType === 'threat_type' || reportType === 'activity') {
-    doc.text(`Report Type: ${reportType === 'threat_type' ? 'Threat Type Analysis' : 'Activity Analysis'}`);
+  if (reportType === 'threat' || reportType === 'activity') {
+    doc.text(`Report Type: ${reportType === 'threat' ? 'Threat Type Analysis' : 'Activity Analysis'}`);
   }
   doc.moveDown();
 
@@ -102,7 +107,7 @@ exports.handler = async (event) => {
     ];
     
     // Add sender information for threat_type or activity reports
-    if (reportType === 'threat_type' || reportType === 'activity') {
+    if (reportType === 'threat' || reportType === 'activity') {
       threatInfo.push({ label: 'Sender', value: item.from || 'Unknown' });
     }
     
@@ -168,7 +173,7 @@ exports.handler = async (event) => {
   
   // Generate a more descriptive filename based on the report type
   let reportPrefix = 'report';
-  if (reportType === 'threat_type') {
+  if (reportType === 'threat') {
     reportPrefix = 'threat_analysis';
   } else if (reportType === 'activity') {
     reportPrefix = 'activity_analysis';
@@ -188,6 +193,7 @@ exports.handler = async (event) => {
   await dynamo.send(new PutItemCommand({
       TableName: TABLE_NAME,
       Item: {
+        date: { S: new Date().toISOString() },
         s3Key: { S: `reports/${report_name}` }
       }
   }));
@@ -196,7 +202,17 @@ exports.handler = async (event) => {
     statusCode: 200,
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': 'attachment; filename="report.pdf"'
+      'Content-Disposition': 'attachment; filename="report.pdf"',
+      'Access-Control-Allow-Origin': "*",
     }
   };
+    
+  } catch (error) {
+    
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ message: "Error generating URL", error: error.message }),
+    };
+
+  }
 };

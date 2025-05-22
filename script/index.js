@@ -59,6 +59,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     filteredData = [...actualData];
 
 
+
     //Return button functionality
     returnBtn.addEventListener('click',async function(){
 
@@ -79,10 +80,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     });
 
+
     isActiveBtn.forEach(btn => {
     btn.addEventListener('click', async function() {
 
       btn.disabled = true;
+      document.body.style.cursor = 'progress';
       const activity = session_threat_data.isActive;
       const systemUrl = new URL(window.location.href);
       const key = systemUrl.searchParams.get('id');
@@ -123,10 +126,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           const urlParams = new URLSearchParams(window.location.search);
           
           for( let i=0;i<filteredData.length;i++){
-            console.log(filteredData[i].emailUid);
             if(filteredData[i].emailUid === urlParams.get("id")){
               session_threat_data = filteredData[i];
-              markActivity(session_threat_data.isActive);
+              await markActivity(session_threat_data.isActive);
             }
 
         }
@@ -135,6 +137,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         alert(`Error: ${error.message}`);
       }finally{
         btn.disabled = false;
+        document.body.style.cursor = '';
+
       }
       
 
@@ -156,7 +160,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
           
         } catch (error) {
-          console.log(`Error loading pdf : ${error}`)
+          alert(error)
         }
 
       
@@ -185,6 +189,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     saveRemark.addEventListener('click', async function () {
       saveRemark.disabled = true;
       const remarks = remarkText.value.replace(/\n/g, '&&&'); // FIXED: regex usage
+      
+
 
       const systemUrl = new URL(window.location.href);
       const key = systemUrl.searchParams.get('id');
@@ -196,6 +202,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const url = `https://o8cbj2fli2.execute-api.ap-south-1.amazonaws.com/default/updateData`;
       try {
+          if ( /[<>"']/.test(remarks) ) {
+          throw new Error(`Special characters (<>"') cannot be used`);
+        }
         const response = await fetch(`${url}?id=${encodeURIComponent(key)}&fromValue=${encodeURIComponent(session_threat_data.from)}`, {
           method: "PUT",
           headers: {
@@ -226,7 +235,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           const urlParams = new URLSearchParams(window.location.search);
           
           for( let i=0;i<filteredData.length;i++){
-            console.log(filteredData[i].emailUid);
+
             if(filteredData[i].emailUid === urlParams.get("id")){
               session_threat_data = filteredData[i];
               addDataView(filteredData[i]);
@@ -293,8 +302,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           // Store the token and redirect or show app content
           localStorage.setItem("id_token", data.id_token);
           await new Promise(resolve => setTimeout(resolve, 1000));
-          console.log("Login successful!");
-          // Optionally remove ?code from URL
+
           window.history.replaceState({}, document.title, redirectUri);
         } else {
           console.error("Token exchange failed:", data);
@@ -310,7 +318,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     
     // Listen for search input and filter the table.
     search_input.addEventListener('keyup', async function () {
-      const value = this.value;
+      const value = escapeHTML(this.value);
       const searchData = await searchTable(value, filteredData);
       bodyBuild(tbody, searchData);
     });
@@ -396,6 +404,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   });
 
+  function escapeHTML(str) {
+  return str.replace(/[&<>"']/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[c]);
+}
 
   //Function for displaying tooltip
   async function isEmpty(tbody) {
@@ -472,13 +489,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         //Change views with transition
         showLayout(main_threat, main_threat_data);
         addDataView(data[i]);
-
+        document.addEventListener('keydown', handleEscape);
         
       });
   
       tbody.appendChild(tr);
     }
     isEmpty(tbody);
+}
+
+async function handleEscape(e) {
+
+  if(e.key === "Escape"){
+    const returnBtn = document.querySelector(".returnBtn");
+    const event = new Event('click', { bubbles: true });
+    returnBtn.dispatchEvent(event);
+    document.removeEventListener('keydown', handleEscape);
+  }
 }
 
 async function showLayout(activeLayout, newActiveLayout) {
@@ -536,7 +563,7 @@ async function addDataView(params) {
 
 }
 
-function markActivity(activity){
+async function markActivity(activity){
   if(!activity){
       isActiveText.textContent = 'Mark active';
     }else{
@@ -594,8 +621,6 @@ function markActivity(activity){
     }
 
     } catch (error) {
-      
-      console.log(`Error : ${error}`);
       return [];
     }finally{
       bodyBuild(body,filteredData);
