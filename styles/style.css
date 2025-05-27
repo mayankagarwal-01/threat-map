@@ -295,6 +295,10 @@ main#threat-data .threat-data-container{
     transition: all 0.3s ease;
 }
 
+#data-remark-cancel{
+    background-color: var(--color-red);
+}
+
 .data-remark-btn button:hover{
     background-color: var(--accent-secondary);
     transform: translateY(-1px);

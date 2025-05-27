@@ -53,11 +53,39 @@ document.addEventListener("DOMContentLoaded", async () => {
     const saveRemark = document.getElementById('data-remark-save');
     const remarkText = document.getElementById('remark-textarea');
 
+    const refreshEmailMetadata = document.getElementById('refresh-email-metadata');
+
 
     actualData = await fetchCompleteData();
 
     filteredData = [...actualData];
 
+    refreshEmailMetadata.addEventListener('click', async function () {
+      
+      const url = 'https://1fp6601ed7.execute-api.ap-south-1.amazonaws.com/default/PollerV2';
+      try{
+        const response = await fetch(url, {
+          method: "GET",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (response.status === 401) {
+          alert("Session expired. Please login again.");
+          localStorage.clear();
+          window.location.href = "login.html";
+          return;
+        }
+        if( response.status === 200){
+          fetchCompleteData();
+          alert('Done');
+        }
+      }catch (err){
+        console.log(err);
+      }
+
+    })
 
 
     //Return button functionality
@@ -301,6 +329,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (data.id_token) {
           // Store the token and redirect or show app content
           localStorage.setItem("id_token", data.id_token);
+          localStorage.setItem("access_token", data.access_token)
           await new Promise(resolve => setTimeout(resolve, 1000));
 
           window.history.replaceState({}, document.title, redirectUri);
