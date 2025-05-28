@@ -209,8 +209,15 @@ th{
 
 
 table tbody tr:hover{
-    cursor: pointer;
     background: var(--bg-card);
+}
+
+#tooltip{
+    display: none;
+    text-align: center;
+    color: var(--text-secondary);
+    margin-top: 1.5rem;
+    transition: all 0.5s ease-in-out;
 }
 
 @keyframes shimmer {

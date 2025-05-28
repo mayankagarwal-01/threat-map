@@ -18,7 +18,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         alert("Not logged in. Redirecting to login...");
         window.location.href = "login.html"; 
-      }
+    }
+
+    const adminNav = document.getElementById('admin-nav');
+    adminNav.style.display = isAdmin() ? '' : 'none';
+
     
       
     const table = document.getElementById('threats-table');
@@ -684,3 +688,35 @@ async function markActivity(activity){
     }
     
   }
+
+
+// Function to check if user is admin
+function isAdmin() {
+    try {
+        const token = localStorage.getItem("id_token");
+        if (!token) return false;
+        
+        const decodedToken = decodeJWT(token);
+        const userGroups = decodedToken['cognito:groups'] || [];
+        
+        return userGroups.includes('Admin');
+    } catch (error) {
+        console.error('Error checking admin status:', error);
+        return false;
+    }
+}
+
+// Function to decode JWT token
+function decodeJWT(token) {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        
+        return JSON.parse(jsonPayload);
+    } catch (error) {
+        throw new Error('Invalid JWT token');
+    }
+}

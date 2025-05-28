@@ -1,6 +1,7 @@
 let usersData = [];
 let sendersData = [];
 
+
 document.addEventListener('DOMContentLoaded', async () => {
 
     token = localStorage.getItem("id_token");
@@ -20,7 +21,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    console.log(fetchData('users'));
+    bodyBuild('users', await fetchData('users'));
+    bodyBuild('senders', await fetchData('senders'));
+
 
 });
 
@@ -55,22 +58,28 @@ function decodeJWT(token) {
     }
 }
 
+function isEmpty(tbody) {
+  
+    const tooltip = document.getElementById('tooltip');
+    tooltip.style.display = sendersData.length === 0 ? 'block' : 'none';
+
+}
+
 async function fetchData(key) {
     try {
        if(key==='users'){
         return await fetchCognitoUsers();
-       }else{
-            const url = `https://u4v38tzuud.execute-api.ap-south-1.amazonaws.com/fetchFromDynamo?key=${encodeURIComponent(key)}`;
+       }else if(key==='senders'){
+            const url = `https://u4v38tzuud.execute-api.ap-south-1.amazonaws.com/fetchFromDynamo?key=${encodeURIComponent('TABLE3')}`;
             const token = localStorage.getItem("id_token");
             const response = await getAuth(url, token);
-            
             if(response && Array.isArray(response) && response.length > 0){
-                const unwrappedData = response.map(item => {
-                    return {
-                        sender: item.sender.S
-                    }
+                response.forEach(item => {
+                    sendersData.push(item.sender.S);
                 })
             }
+            isEmpty();
+            return sendersData;
         } 
     }catch (error) {
         console.log(`Error : ${error}`);
@@ -78,23 +87,24 @@ async function fetchData(key) {
     }
 }
 
+
+
 // Function to fetch Cognito users
 async function fetchCognitoUsers() {
-    const url = `https://u4v38tzuud.execute-api.ap-south-1.amazonaws.com/cognito-users`;
+    const url = ` https://o452w010wj.execute-api.ap-south-1.amazonaws.com/default/cognito-users`;
     try {
         const token = localStorage.getItem("id_token");
         const response = await getAuth(url, token);
         
-        if(response && Array.isArray(response) && response.length > 0) {
+        if(response) {
             // Clear existing users data
             usersData.length = 0;
             
-            const cognitoUsers = response.map(user => {
+            const cognitoUsers = response.users.map(user => {
                 const userData = {
-                    username: user.Username,
-                    email: user.Attributes?.find(attr => attr.Name === 'email')?.Value || 'N/A',
-                    status: user.UserStatus,
-                    enabled: user.Enabled,
+                    username: user.username,
+                    email: user.email || 'N/A',
+                    enabled: user.enabled,
                     groups: user.Groups || []
                 };
                 
@@ -109,6 +119,47 @@ async function fetchCognitoUsers() {
         console.log(`Error fetching Cognito users: ${error}`);
         return [];
     }
+}
+
+  async function bodyBuild(key, data) {
+
+    if(key === 'users'){
+
+        const userTable = document.getElementById('users-table');
+        const userTableBody = userTable.querySelector('tbody');
+        userTableBody.innerHTML = '';
+        for (let i = 0; i < data.length; i++) {
+            const tr = document.createElement('tr');
+            
+                tr.innerHTML = `
+                <td>${i + 1}</td>
+                <td>${data[i].username}</td>
+                <td>${data[i].group}</td>
+                <td>${data[i].enabled ? 'Enabled' : 'Disabled'}</td>
+                <td><i class="fa-solid fa-pen-to-square cursor-pointer text-2xl"></i></td>
+            `;
+            userTableBody.appendChild(tr);      
+        }
+        userTableBody.classList.remove('skeleton');
+    }else if(key === 'senders'){
+
+        const senderTable = document.getElementById('senders-table');
+        const senderTableBody = senderTable.querySelector('tbody');
+        senderTableBody.innerHTML = '';
+        for (let i = 0; i < data.length; i++) {
+            const tr = document.createElement('tr');
+                tr.innerHTML = `
+                <td>${i + 1}</td>
+                <td>${data[i]}</td>
+                <td><i class="fa-solid fa-pen-to-square cursor-pointer text-2xl"></i></td>
+            `;
+            senderTableBody.appendChild(tr);      
+        }
+        senderTableBody.classList.remove('skeleton');
+
+    }
+
+    
 }
 
 async function getAuth(url, token){
