@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="/styles/admin.css">
+</head>
+<body>
+
+    <header>
+
+        <div class="logo">
+            <i class="fa-solid fa-masks-theater"></i>
+            <h3>Threat Map</h3>
+        </div>
+        
+        <nav>
+            <ul class="nav-links">
+                <li><a href="admin.html" class="active">Admin Panel</a></li>
+            </ul>
+        </nav>
+
+        <a class="logout" href="https://ap-south-1sujyelylr.auth.ap-south-1.amazoncognito.com/logout?client_id=5nbt5f1u6on96i5ad9693ct9eq&logout_uri=http%3A%2F%2Flocalhost%3A5500%2Flogin.html"><i class="fa-solid fa-right-from-bracket"></i></a>
+
+    </header>
+
+    <main id="application-view" class="active">
+
+        <div id="users">
+            <div>
+                <h2>Users</h2>
+                <button id="create-user-btn">Create User</button>
+            </div>
+
+        <table id="users-table" class="table table-fixed text-left tracking-wider">
+          <thead>
+            <tr>
+              <th scope="col" class="p-4 w-10">#</th>
+              <th scope="col" class="p-4 w-24">User</th>
+              <th scope="col" class="p-4 w-20">Authority</th>
+              <th scope="col" class="p-4 w-16">Status</th>
+              <th scope="col" class="p-4 w-14">Action</th>
+
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-black skeleton">
+
+            <tr>
+              <th scope="row">1</th>
+              <td>LOADING</td>
+              <td>LOADING</td>
+              <td>LOADING</td>
+              <td>LOADING</td>
+
+            </tr>
+            
+          </tbody>
+        </table>
+
+        </div>
+
+        <div id="senders">
+            <div>
+                <h2>Senders</h2>
+                <button id="add-sender-btn">Add Sender</button>
+            </div>
+
+        <table id="senders-table" class="table table-fixed text-left tracking-wider">
+          <thead>
+            <tr>
+              <th scope="col" class="p-4 w-10">#</th>
+              <th scope="col" class="p-4 w-24">Sender</th>
+              <th scope="col" class="p-4 w-14">Action</th>
+
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-black skeleton">
+
+            <tr>
+              <th scope="row">1</th>
+              <td>LOADING</td>
+              <td>LOADING</td>
+
+            </tr>
+            
+          </tbody>
+        </table>
+
+        </div>
+
+
+    </main>
+
+    <script src="/script/admin.js"></script>
+    
+</body>
+</html>

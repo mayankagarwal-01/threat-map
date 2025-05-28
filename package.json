@@ -8,27 +8,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mayankagarwal-01/neepco-threat-map.git"
+    "url": "git+https://github.com/mayankagarwal-01/threat-map.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/mayankagarwal-01/neepco-threat-map/issues"
+    "url": "https://github.com/mayankagarwal-01/threat-map/issues"
   },
-  "homepage": "https://github.com/mayankagarwal-01/neepco-threat-map#readme",
+  "homepage": "https://github.com/mayankagarwal-01/threat-map#readme",
   "dependencies": {
-    "@aws-sdk/client-dynamodb": "^3.804.0",
-    "@aws-sdk/client-s3": "^3.804.0",
-    "@aws-sdk/client-secrets-manager": "^3.804.0",
-    "@aws-sdk/s3-request-presigner": "^3.806.0",
-    "fetch": "^1.1.0",
-    "imap-simple": "^5.1.0",
-    "install": "^0.13.0",
-    "mailparser": "^3.7.2",
-    "npm": "^11.3.0",
-    "openai": "^4.98.0",
-    "pdfkit": "^0.17.1",
-    "stream-buffers": "^3.0.3"
+    "fetch": "^1.1.0"
   }
 }
