@@ -34,7 +34,7 @@
         <div id="users">
             <div>
                 <h2>Users</h2>
-                <button id="create-user-btn">Create User</button>
+                <button id="create-user-btn" onclick="dialogView('create-user')">Create User</button>
             </div>
 
         <table id="users-table" class="table table-fixed text-left tracking-wider">
@@ -67,7 +67,7 @@
         <div id="senders">
             <div>
                 <h2>Senders</h2>
-                <button id="add-sender-btn">Add Sender</button>
+                <button id="add-sender-btn" onclick="dialogView('add-sender')">Add Sender</button>
             </div>
 
         <table id="senders-table" class="table table-fixed text-left tracking-wider">
@@ -95,9 +95,123 @@
 
 
         </div>
-
-
     </main>
+
+    <dialog id="edit-dialog" class="container">
+
+      <div id="create-user" class="sub-container">
+        <h2>Create User</h2>
+        <div class="username">
+          <label for="username">Username</label>
+          <input type="text" id="username">
+        </div>
+
+        <div class="email">
+          <label for="email">Email</label>
+          <input type="email" id="email">
+        </div>
+
+        <div class="temp_pass">
+          <label for="temp_pass">Temporary Password</label>
+          <input type="password" id="temp_pass">
+        </div>
+
+        <div class="create-action">
+          <button onclick="closeDialog()">Cancel</button>
+          <button>Create</button>
+        </div>
+      </div>
+
+      <div id="add-sender" class="sub-container">
+        <h2>Add Sender</h2>
+
+        <div class="sender-email">
+          <label for="sender-email">Email</label>
+          <input type="email" id="sender-email">
+        </div>
+
+        
+
+        <div class="create-action">
+          <button onclick="closeDialog()">Cancel</button>
+          <button>Add</button>
+        </div>
+      </div>
+
+      <div id="edit-user" class="sub-container">
+        <h2>Edit User</h2>
+        <div class="username">
+          <label for="edit-username">Username</label>
+          <input type="text" id="edit-username" disabled>
+        </div>
+
+        <div class="email">
+          <label for="edit-email">Email</label>
+          <input type="email" id="edit-email">
+        </div>
+
+        <div class="status">
+          <label for="edit-user-status">Status</label>
+          <select name="edit-user-status" id="edit-user-status" >
+            <option value="enabled">Enabled</option>
+            <option value="disabled">Disabled</option>
+
+          </select>
+        </div>
+
+        <div class="create-action">
+          <button onclick="closeDialog()">Cancel</button>
+          <button>Update</button>
+        </div>
+      </div>
+
+      <div id="edit-sender" class="sub-container">
+        <h2>Edit Sender</h2>
+        <div class="email">
+          <label for="edit-sender-email">Email</label>
+          <input type="email" id="edit-sender-email">
+        </div>
+
+        <div class="create-action">
+          <button onclick="closeDialog()">Cancel</button>
+          <button>Update</button>
+        </div>
+      </div>
+
+      <div id="delete-user" class="sub-container">
+        <h2>Delete User</h2>
+        <div class="username">
+          <label for="delete-user-username">Username</label>
+          <input type="text" id="delete-user-username" class="delete" disabled>
+        </div>
+
+        <div class="email">
+          <label for="delete-user-email">Email</label>
+          <input type="text" id="delete-user-email" class="delete" disabled>
+        </div>
+
+        <div class="delete-action">
+          <button onclick="closeDialog()">Cancel</button>
+          <button>Confirm</button>
+        </div>
+      </div>
+
+      <div id="delete-sender" class="sub-container">
+        <h2>Delete Sender</h2>
+      
+        <div class="email">
+          <label for="delete-sender-email">Email</label>
+          <input type="text" id="delete-sender-email" class="delete" disabled>
+        </div>
+
+        <div class="delete-action">
+          <button onclick="closeDialog()">Cancel</button>
+          <button>Confirm</button>
+        </div>
+      </div>
+
+
+    </dialog>
 
     <script src="/script/admin.js"></script>
     
