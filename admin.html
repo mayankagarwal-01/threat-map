@@ -25,7 +25,7 @@
             </ul>
         </nav>
 
-        <a class="logout" href="https://ap-south-1sujyelylr.auth.ap-south-1.amazoncognito.com/logout?client_id=5nbt5f1u6on96i5ad9693ct9eq&logout_uri=http%3A%2F%2Flocalhost%3A5500%2Flogin.html"><i class="fa-solid fa-right-from-bracket"></i></a>
+        <a onclick="logout()" class="logout" href="https://ap-south-1sujyelylr.auth.ap-south-1.amazoncognito.com/logout?client_id=5nbt5f1u6on96i5ad9693ct9eq&logout_uri=http%3A%2F%2Flocalhost%3A5500%2Flogin.html"><i class="fa-solid fa-right-from-bracket"></i></a>
 
     </header>
 
@@ -113,7 +113,11 @@
 
         <div class="temp_pass">
           <label for="temp_pass">Temporary Password</label>
-          <input type="password" id="temp_pass">
+          <div class="password">
+            <input type="password" id="temp_pass">
+            <i class="fa-solid fa-eye" onclick="togglePassword()"></i>
+          </div>
+
         </div>
 
         <div class="create-action">

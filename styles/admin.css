@@ -422,3 +422,21 @@ select:focus{
   font-size: 1.75rem;
   color: #555;
 }
+
+.password{
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border: var(--border-medium) 1px solid;
+  border-radius: 0.375rem;
+}
+
+.password input{
+  border: none;
+  width: 100%;
+}
+
+.password i{
+  cursor: pointer;
+  margin-right: 1rem;
+}
