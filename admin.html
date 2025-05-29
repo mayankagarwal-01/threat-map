@@ -110,6 +110,13 @@
           <label for="email">Email</label>
           <input type="email" id="email">
         </div>
+         <div class="group">
+          <label for="group">Group</label>
+          <select name="group" id="group">
+            <option value="User">User</option>
+            <option value="Admin">Admin</option>
+          </select>
+        </div>
 
         <div class="temp_pass">
           <label for="temp_pass">Temporary Password</label>
@@ -122,7 +129,7 @@
 
         <div class="create-action">
           <button onclick="closeDialog()">Cancel</button>
-          <button>Create</button>
+          <button key="create-user" onclick="adminAction()">Create</button>
         </div>
       </div>
 
@@ -138,7 +145,7 @@
 
         <div class="create-action">
           <button onclick="closeDialog()">Cancel</button>
-          <button>Add</button>
+          <button key="add-sender" onclick="adminAction()">Add</button>
         </div>
       </div>
 
@@ -157,28 +164,15 @@
         <div class="status">
           <label for="edit-user-status">Status</label>
           <select name="edit-user-status" id="edit-user-status" >
-            <option value="enabled">Enabled</option>
-            <option value="disabled">Disabled</option>
+            <option value="true">Enabled</option>
+            <option value="false">Disabled</option>
 
           </select>
         </div>
 
         <div class="create-action">
           <button onclick="closeDialog()">Cancel</button>
-          <button>Update</button>
-        </div>
-      </div>
-
-      <div id="edit-sender" class="sub-container">
-        <h2>Edit Sender</h2>
-        <div class="email">
-          <label for="edit-sender-email">Email</label>
-          <input type="email" id="edit-sender-email">
-        </div>
-
-        <div class="create-action">
-          <button onclick="closeDialog()">Cancel</button>
-          <button>Update</button>
+          <button key="update-user" onclick="adminAction()">Update</button>
         </div>
       </div>
 
@@ -196,7 +190,7 @@
 
         <div class="delete-action">
           <button onclick="closeDialog()">Cancel</button>
-          <button>Confirm</button>
+          <button key="delete-user" onclick="adminAction()">Confirm</button>
         </div>
       </div>
 
@@ -210,9 +204,10 @@
 
         <div class="delete-action">
           <button onclick="closeDialog()">Cancel</button>
-          <button>Confirm</button>
+          <button key="delete-sender" onclick="adminAction()">Confirm</button>
         </div>
       </div>
+
 
 
     </dialog>
