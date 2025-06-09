@@ -385,7 +385,7 @@ async function fetchCognitoUsers() {
     }
 }
 
-  async function bodyBuild(key, data) {
+async function bodyBuild(key, data) {
 
     if(key === 'users'){
 
