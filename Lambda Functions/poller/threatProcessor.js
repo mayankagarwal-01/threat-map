@@ -1,5 +1,5 @@
 // Required Libraries
- const { main } = require('./promptProcessor.js'); 
+const { main } = require('./promptProcessor.js'); 
 const imaps = require('imap-simple');
 const { WritableStreamBuffer } = require('stream-buffers');
 const { simpleParser } = require('mailparser');
@@ -17,8 +17,6 @@ const s3 = new S3Client({ region: 'ap-south-1' });
 const dynamo = new DynamoDBClient({ region: 'ap-south-1' });
 const secretsManager = new SecretsManagerClient({ region: 'ap-south-1' });
 
-//keyworks based threat classification
-const KEYWORDS = ['threat', 'malware', 'attack', 'virus', 'phishing'];
 
 
 let processedUIDs = new Set();
@@ -27,6 +25,9 @@ let processedUIDs = new Set();
 exports.handler = async (event) => {
   //Global availability of connection
   let connection;
+  //keyworks based threat classification
+  const token = event.headers?.authorization?.slice(7);
+  const KEYWORDS = await fetchData('TABLE3',token);
 
   try {
 
@@ -97,7 +98,7 @@ exports.handler = async (event) => {
 
         //Keywords based email check
         const isThreat = KEYWORDS.some(keyword =>
-          subject.toLowerCase().includes(keyword) || rawTextBody.toLowerCase().includes(keyword)
+          from.toLowerCase().includes(keyword)
         );
 
 
@@ -172,7 +173,13 @@ exports.handler = async (event) => {
     }
 
     //For server testing & validating script
-    return { status: 'Done' };
+    return {
+      status: 200,
+      headers: { 
+        'Allow-Cross-Origin-Access': '*',
+        'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: 'Emails processed successfully.' })
+    };
 
   } catch (error) {
     console.error(`Error: ${error}`);
@@ -191,3 +198,38 @@ exports.handler = async (event) => {
   }
 };
 
+async function fetchData(key, token){
+  try {
+    if(key === 'TABLE3'){
+         const url = `https://u4v38tzuud.execute-api.ap-south-1.amazonaws.com/fetchFromDynamo?key=${encodeURIComponent('TABLE3')}`;
+         const response = await getAuth(url, token);
+         let sendersData = [];
+         if(response && Array.isArray(response) && response.length > 0){
+             response.forEach(item => {
+                 sendersData.push(item.sender.S);
+             })
+         }
+         return sendersData;
+     } 
+ }catch (error) {
+     console.log(`Error : ${error}`);
+     return [];
+ }
+}
+
+
+async function getAuth(url, token){
+  try {
+      const response = await fetch(url, {
+          method: "GET",
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+          }
+      });
+      let data = await response.json();
+      return data;
+  } catch (error) {
+      return error;
+  }
+}

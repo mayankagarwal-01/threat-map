@@ -83,10 +83,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
         if( response.status === 200){
           fetchCompleteData();
+          console.log(response)
           alert('Done');
         }
       }catch (err){
-        console.log(err);
+        console.error(err);
       }
 
     })

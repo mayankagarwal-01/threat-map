@@ -4,6 +4,7 @@ let email_metadata = [];
 let required_Metadata = [];
 let reportData = [];
 let filteredData = [];
+let sendersData = [];
 
 document.addEventListener("DOMContentLoaded", async () => {
 
@@ -20,6 +21,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     email_metadata = await fetchData('TABLE1');
     reportData = await fetchData('TABLE2');
+    sendersData = await fetchData('TABLE3');
+
     updateView();
     
 
@@ -211,6 +214,18 @@ function updateView(){
         showLayout(noReports, reportsView);
         bodyBuild(tbody,reportData)
     }
+
+    if(sendersData != []){
+        const sendersList = document.getElementById('sender-list');
+        sendersList.innerHTML = '';
+        sendersData.forEach(item =>{
+            const option = document.createElement('option');
+            option.innerHTML = `
+            <option value="${item.sender}">${item.sender}</option>
+            `
+            sendersList.appendChild(option);
+        })
+    }
 }
 
 function showDialog() {
@@ -386,6 +401,7 @@ async function generateReport(by, sender, threat_type, activity, fromDate, uptoD
 
     if(required_Metadata.length === 0){
         alert('No records found for given parameters');
+        confirmGen.disabled = false;
         return;
     }
 
@@ -413,36 +429,46 @@ async function generateReport(by, sender, threat_type, activity, fromDate, uptoD
         }
 
     } catch (error) {
-        confirmGen.disabled = false;
         alert(`ERROR : ${error}`);
+    }finally{
+        confirmGen.disabled = false;
     }
 
 }
 
-async function fetchData(key) {
+async function fetchData(key) { 
     const url = `https://u4v38tzuud.execute-api.ap-south-1.amazonaws.com/fetchFromDynamo?key=${encodeURIComponent(key)}`;
 
     try {
         //Fetching data only via auth. users
         const token = localStorage.getItem("id_token");
         const response = await getAuth(url, token);
+        let formattedDate;
+
+        if(key === 'TABLE3'){
+            sendersData = [];
+        }
 
         if(response && Array.isArray(response) && response.length > 0){
             const unwrappedData = response.map(item => {
-                const formattedDate = new Date(item.date.S).toLocaleString('en-IN', {
-                    timeZone: 'Asia/Kolkata',
-                    dateStyle: 'medium',
-                });
+                
+
+                if(key != 'TABLE3'){
+                    formattedDate = new Date(item.date.S).toLocaleString('en-IN', {
+                        timeZone: 'Asia/Kolkata',
+                        dateStyle: 'medium',
+                    });
+                }
+
 
                 if(key === 'TABLE2'){
-                    
 
                     return {
                         date: formattedDate,
                         s3Key: item.s3Key.S,
                     };
                     
-                }else{
+                }else if(key === 'TABLE1'){
                     return {
                     from: item.from.S,
                     date: formattedDate,
@@ -456,13 +482,17 @@ async function fetchData(key) {
                     type: item.type.S,
                     remarks: item.remarks.S ?? 'N/A'
                 };
+                }else if(key === 'TABLE3'){
+                    return{
+                        sender: item.sender.S
+                    }
                 }
             });
             return unwrappedData;
         }
         return [];
     } catch (error) {
-        console.log(`Error : ${error}`);
+        console.error(error);
         return [];
     }
 }

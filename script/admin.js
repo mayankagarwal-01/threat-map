@@ -365,11 +365,12 @@ async function fetchCognitoUsers() {
             usersData.length = 0;
             
             const cognitoUsers = response.users.map(user => {
+                console.error(user)
                 const userData = {
                     username: user.username,
                     email: user.email || 'N/A',
                     enabled: user.enabled,
-                    groups: user.Groups || []
+                    groups: user.groups || []
                 };
                 
                 usersData.push(userData);
@@ -398,7 +399,7 @@ async function bodyBuild(key, data) {
                 tr.innerHTML = `
                 <td>${i + 1}</td>
                 <td>${data[i].username}</td>
-                <td>${data[i].group}</td>
+                <td>${data[i].groups}</td>
                 <td>${data[i].enabled ? 'Enabled' : 'Disabled'}</td>
                 <td>
                     <div class="custom-select-wrapper">
